@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
     public static final String MIME_TEXT_PLAIN = "text/plain";
     public static final byte[] TAG_UID = { 71, 10, 119, 7, 87, 121, 2, 9, 127, 1, 67, 78, 2, 68, 48, 44};
     //Used for backwards compatibility.
-    @Deprecated
     public static final byte[] OLD_TAG_UID = { 71, 10, 119, 7, 87, 121, 37, 33, 39, 117, 127, 80, 111, 102, 78, 2, 100, 77, 57, 124, 65, 39, 99, 46, 127, 23, 66, 20, 127, 27, 62, 27, 106, 66, 106, 127, 23, 63, 43, 82, 8, 54, 121, 69, 40, 79, 78, 1, 84, 50, 64, 110, 46, 92, 84, 114, 121, 92, 15, 59, 88, 99, 87, 75, 94, 57, 46, 50, 8, 46, 74, 83, 57, 7, 36, 32, 95, 85, 89, 64, 127, 1, 27, 122, 42, 20, 122, 46, 32, 56, 2, 22, 67, 0, 97, 105, 109, 14, 89, 67, 78, 2, 115, 37, 2, 21, 39, 22, 60, 14, 27, 111, 116, 103, 67, 118, 124, 6, 65, 79, 78, 7, 48, 20, 95, 56, 18, 68, 48, 44};
 
 
