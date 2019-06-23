@@ -95,6 +95,9 @@ public class ReaderFragment extends Fragment {
                             }else if (Arrays.equals(record.getId(), MainActivity.TAG_UID )){
                                 requirePassword = true;
                                 encryptedRecords.add(record);
+                            }else if (!Arrays.equals(record.getId(), MainActivity.OLD_TAG_UID )){
+                                requirePassword = true;
+                                encryptedRecords.add(record);
                             }
                             break;
 
