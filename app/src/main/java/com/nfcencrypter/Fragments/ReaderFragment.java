@@ -95,7 +95,7 @@ public class ReaderFragment extends Fragment {
                             }else if (Arrays.equals(record.getId(), MainActivity.TAG_UID )){
                                 requirePassword = true;
                                 encryptedRecords.add(record);
-                            }else if (!Arrays.equals(record.getId(), MainActivity.OLD_TAG_UID )){
+                            }else if (Arrays.equals(record.getId(), MainActivity.OLD_TAG_UID )){
                                 requirePassword = true;
                                 encryptedRecords.add(record);
                             }
@@ -125,6 +125,9 @@ public class ReaderFragment extends Fragment {
                     }
                 }).setNegativeButton("Cancel", null).show();
             }else{
+                if(records.isEmpty()){
+                    records.add("Couldn't read Tag");
+                }
                 updateDataset(activity);
             }
         }else{

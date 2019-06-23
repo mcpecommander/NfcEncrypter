@@ -99,30 +99,25 @@ public class WriterFragment extends Fragment {
                 Toast.makeText(activity, "Press the Write button", Toast.LENGTH_SHORT).show();
                 return;
             }
-            try {
-                if(write(ndefRecords, intent.getParcelableExtra(NfcAdapter.EXTRA_TAG))) {
-                    readIndicator.dismiss();
-                    MainActivity.writing_successful.show();
-                    EditText password = activity.findViewById(R.id.password);
-                    EditText confirmation = activity.findViewById(R.id.password_confirmation);
-                    password.getText().clear();
-                    confirmation.getText().clear();
-                }else{
-                    MainActivity.writing_failed.show();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (FormatException e) {
-                e.printStackTrace();
+            if(write(ndefRecords, intent.getParcelableExtra(NfcAdapter.EXTRA_TAG))) {
+                readIndicator.dismiss();
+                MainActivity.writing_successful.show();
+                EditText password = activity.findViewById(R.id.password);
+                EditText confirmation = activity.findViewById(R.id.password_confirmation);
+                password.getText().clear();
+                confirmation.getText().clear();
+            }else{
+                MainActivity.writing_failed.show();
             }
         }
     }
-    private boolean write(NdefRecord[] records, Tag tag) throws IOException, FormatException {
+    private boolean write(NdefRecord[] records, Tag tag) {
         NdefMessage message = new NdefMessage(records);
         if(MainActivity.checkTech(tag)) {
             Ndef ndef = Ndef.get(tag);
             if (ndef != null) {
-                ndef.connect();
+                try {
+                    ndef.connect();
                 if (ndef.isWritable()) {
                     ndef.writeNdefMessage(message);
                 } else {
@@ -131,6 +126,11 @@ public class WriterFragment extends Fragment {
                 }
                 ndef.close();
                 return true;
+                } catch ( FormatException e) {
+                    Toast.makeText(activity, "Formatting has gone wrong.", Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    Toast.makeText(activity, "Records size has probably exceeded the tag size, delete some records and try again..", Toast.LENGTH_LONG).show();
+                }
             }
         }
         return false;

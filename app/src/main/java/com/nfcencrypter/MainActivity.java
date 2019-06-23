@@ -17,6 +17,9 @@ import android.nfc.tech.NfcV;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -24,6 +27,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
@@ -99,6 +103,9 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar myToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(myToolbar);
+
         eye = getResources().getDrawable(R.drawable.show_icon, null);
         eyeChecked = getResources().getDrawable(R.drawable.hide_icon, null);
         writing_successful = new AlertDialog.Builder(this).setTitle("Writing successful.").setPositiveButton("Ok", null).create();
@@ -120,6 +127,21 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
         mainPage.setCurrentItem(0);
         handleIntent(getIntent());
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options, menu);
+        return true;
+    }
+
+    public void help(MenuItem item){
+        Intent help = new Intent(this, HelpActivity.class);
+        help.putExtra("page", mainPage.getCurrentItem());
+        startActivity(help);
+
+    }
+
 
     @Override
     public void onFinishLoading(RecyclerView view) {
