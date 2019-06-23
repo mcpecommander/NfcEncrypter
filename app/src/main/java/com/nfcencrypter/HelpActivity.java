@@ -25,7 +25,6 @@ public class HelpActivity extends AppCompatActivity {
         Objects.requireNonNull(ab).setDisplayHomeAsUpEnabled(true);
 
 
-        ScrollView scroll = findViewById(R.id.scroll);
 
     }
 
