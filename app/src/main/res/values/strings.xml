@@ -16,10 +16,23 @@
     <string name="write_help_title">How to write and encrypt data into a tag</string>
     <string name="write_help_desc">To write and encrypt data into an NFC tag, 2 perquisites are required:\n
         1: A device that supports NFC tag reading and writing.(This should already be achieved as the app can not be installed otherwise).\n
-        2: An NFC tag that supports NDEF technology(check the seller of the tag for more information).\n\n
-        On the WRITE tab records (texts) can be added and both a password and a confirmation are required to encrypt that data into the tag.\n
+        2: An NFC tag that supports NDEF technology(check the seller of the tag for more information).\n
+        On the WRITE tab records (texts) can be added and both a password and a confirmation are required to encrypt that data into the tag.
     </string>
     <string name="copy_help_title">How to copy tags</string>
-    <string name="copy_help_desc">Copying tags </string>
+    <string name="copy_help_desc">Copying data between tags should work with all sorts of data as long as the payload is not empty.\n
+        Copying encrypted tags does not require reentering the password as it is copying the encrypted binary as it is.\n
+        To copy a tag: first press the copy button and a copy prompt will show up.\n
+        place the tag with data near the device then wait for the next prompt to place the other tag to paste the contents into it.
+    </string>
+    <string name="remove_help_title">How to remove password from tags</string>
+    <string name="remove_help_desc">To remove passwords from a tag, first press the remove password button and wait for the prompt
+        then place the encrypted tag to read it\'s contents and decrypt the data.\n
+        After decrypting the tag a new prompt to paste the new data will show up.\n
+        Place the tag again (or another tag if wanted) to write the data as text records. (these text records can be read by any device)</string>
+    <string name="erase_help_title">How to erase the content of a tag</string>
+    <string name="erase_help_desc">To erase the contents of a tag simply press the erase button and wait for the prompt.\n
+        Then place the tag near the device and the contents will be deleted.\n
+        Notice that this action cannot be undone and the records on the tag are permanently deleted.</string>
 
 </resources>

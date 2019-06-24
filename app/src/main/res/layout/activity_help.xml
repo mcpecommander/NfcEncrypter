@@ -56,7 +56,7 @@
                 android:id="@+id/write_help_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/write_help_title"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
@@ -73,6 +73,7 @@
                 android:id="@+id/copy_help_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="@string/copy_help_title"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
@@ -83,6 +84,40 @@
                 android:layout_marginTop="8dp"
                 android:lineSpacingMultiplier="1.5"
                 android:text="@string/copy_help_desc"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+            <TextView
+                android:id="@+id/remove_help_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/remove_help_title"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+            <TextView
+                android:id="@+id/remove_help_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingMultiplier="1.5"
+                android:text="@string/remove_help_desc"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+            <TextView
+                android:id="@+id/erase_help_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/erase_help_title"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+            <TextView
+                android:id="@+id/erase_help_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingMultiplier="1.5"
+                android:text="@string/erase_help_desc"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
         </LinearLayout>
