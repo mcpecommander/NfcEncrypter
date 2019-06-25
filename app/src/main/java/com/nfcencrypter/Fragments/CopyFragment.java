@@ -1,7 +1,9 @@
 package com.nfcencrypter.Fragments;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
@@ -10,10 +12,12 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -32,10 +36,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class CopyFragment extends Fragment {
 
-    public static AlertDialog erase_alert, copy_alert, remove_password_alert, paste_alert;
+    public static AlertDialog erase_alert, copy_alert, remove_password_alert, paste_alert, erase_confirmation;
     private NdefMessage[] copiedData;
     private List<NdefRecord> decrypted_records;
 
@@ -54,13 +59,16 @@ public class CopyFragment extends Fragment {
         copy_alert = new AlertDialog.Builder(view.getContext()).setTitle("Copying...").setMessage("Place an encrypted tag to copy its content.").create();
         remove_password_alert = new AlertDialog.Builder(view.getContext()).setTitle("Removing...").setMessage("Place an encrypted tag to remove its password.").create();
         paste_alert = new AlertDialog.Builder(view.getContext()).setTitle("Pasting").setMessage("Place a tag to paste the data to").create();
+        erase_confirmation = new AlertDialog.Builder(view.getContext()).setTitle("Are you sure?")
+                .setIcon(android.R.drawable.ic_dialog_alert).setMessage("This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> erase_alert.show()).setNegativeButton("Cancel", null).create();
 
         Button erase = view.findViewById(R.id.erase_tag);
         Button copy = view.findViewById(R.id.copy_button);
         Button removePassword = view.findViewById(R.id.remove_password);
 
         copy.setOnClickListener(v -> copy_alert.show());
-        erase.setOnClickListener(v -> erase_alert.show());
+        erase.setOnClickListener(v -> erase_confirmation.show());
         removePassword.setOnClickListener(v -> remove_password_alert.show());
 
 
@@ -129,6 +137,7 @@ public class CopyFragment extends Fragment {
     }
 
     public void removePassword(Parcelable[] rawMessages){
+        remove_password_alert.dismiss();
         NdefMessage[] messages = new NdefMessage[rawMessages.length];
         for(int i = 0; i < rawMessages.length; i++){
             messages[i] = (NdefMessage) rawMessages[i];
@@ -159,23 +168,35 @@ public class CopyFragment extends Fragment {
                             byte[] payLoad = new byte[encrypted.getPayload().length - 16];
                             System.arraycopy(encrypted.getPayload(), 16, payLoad, 0, payLoad.length);
                             try {
+                                String decryptedText = ReaderFragment.decrypt(password.getText().toString(), iv, payLoad);
+                                if(decryptedText.equals("Wrong password")){
+                                    Toast.makeText(activity, "Wrong password", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
                                 decrypted_records.add(NdefRecord.createTextRecord(Locale.ENGLISH.getLanguage(),
-                                        ReaderFragment.decrypt(password.getText().toString(), iv, payLoad)));
+                                        decryptedText));
                             } catch (NoSuchAlgorithmException e) {
                                 e.printStackTrace();
                             }
                         }
                     }
-                    if (activity != null) {
-                        activity.hideKeyboard();
+                    Context context = getContext();
+                    System.out.println(context);
+                    if (context != null) {
+                        hideKeyboardFrom(context, Objects.requireNonNull(getView()));
                     }
-                    remove_password_alert.dismiss();
-                    paste_alert.show();
+
+                    new Handler().postDelayed(() -> paste_alert.show(), 1);
                 }
             }).setNegativeButton("Cancel", null).show();
         }else{
             Toast.makeText(activity, "Tag does not contain any password protected content.", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    private static void hideKeyboardFrom(Context context, View view) {
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
