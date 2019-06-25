@@ -1,9 +1,7 @@
 package com.nfcencrypter.Fragments;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
@@ -17,7 +15,6 @@ import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -36,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 public class CopyFragment extends Fragment {
 
@@ -70,7 +66,6 @@ public class CopyFragment extends Fragment {
         copy.setOnClickListener(v -> copy_alert.show());
         erase.setOnClickListener(v -> erase_confirmation.show());
         removePassword.setOnClickListener(v -> remove_password_alert.show());
-
 
     }
 
@@ -180,12 +175,8 @@ public class CopyFragment extends Fragment {
                             }
                         }
                     }
-                    Context context = getContext();
-                    System.out.println(context);
-                    if (context != null) {
-                        hideKeyboardFrom(context, Objects.requireNonNull(getView()));
-                    }
 
+                    //Need the delay for the password view to lose focus.
                     new Handler().postDelayed(() -> paste_alert.show(), 1);
                 }
             }).setNegativeButton("Cancel", null).show();
@@ -193,10 +184,5 @@ public class CopyFragment extends Fragment {
             Toast.makeText(activity, "Tag does not contain any password protected content.", Toast.LENGTH_SHORT).show();
         }
 
-    }
-
-    private static void hideKeyboardFrom(Context context, View view) {
-        InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
