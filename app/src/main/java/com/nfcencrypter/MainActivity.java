@@ -52,11 +52,10 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
     //Used for backwards compatibility.
     public static final byte[] OLD_TAG_UID = { 71, 10, 119, 7, 87, 121, 37, 33, 39, 117, 127, 80, 111, 102, 78, 2, 100, 77, 57, 124, 65, 39, 99, 46, 127, 23, 66, 20, 127, 27, 62, 27, 106, 66, 106, 127, 23, 63, 43, 82, 8, 54, 121, 69, 40, 79, 78, 1, 84, 50, 64, 110, 46, 92, 84, 114, 121, 92, 15, 59, 88, 99, 87, 75, 94, 57, 46, 50, 8, 46, 74, 83, 57, 7, 36, 32, 95, 85, 89, 64, 127, 1, 27, 122, 42, 20, 122, 46, 32, 56, 2, 22, 67, 0, 97, 105, 109, 14, 89, 67, 78, 2, 115, 37, 2, 21, 39, 22, 60, 14, 27, 111, 116, 103, 67, 118, 124, 6, 65, 79, 78, 7, 48, 20, 95, 56, 18, 68, 48, 44};
 
-
     ViewPager mainPage;
     MainPageFragmentAdapter adapter;
     Drawable eye, eyeChecked;
-    private NfcAdapter mNfcAdapter;
+    private NfcAdapter nfcAdapter;
     boolean hasData;
     Parcelable[] data;
     public static AlertDialog writing_successful, writing_failed;
@@ -117,12 +116,14 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(mainPage);
 
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-        if (mNfcAdapter == null) {
+        if (nfcAdapter == null) {
             Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
             finish();
 
+        }else if(!nfcAdapter.isEnabled()){
+            Toast.makeText(this, "NFC is turned off, this app will not function.", Toast.LENGTH_LONG).show();
         }
         mainPage.setCurrentItem(0);
         handleIntent(getIntent());
@@ -154,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
             }
             hasData = false;
         }
+        mainPage.addOnPageChangeListener(((WriterFragment) adapter.getRegisteredFragment(1)).pageChangeListener);
     }
 
     @Override
@@ -172,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
     protected void onResume() {
         super.onResume();
 
-        setupForegroundDispatch(this, mNfcAdapter);
+        setupForegroundDispatch(this, nfcAdapter);
         if(NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction()) || NfcAdapter.ACTION_TECH_DISCOVERED.equals(getIntent().getAction()))
         mainPage.setCurrentItem(0);
     }
@@ -180,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
     @Override
     protected void onPause() {
 
-        stopForegroundDispatch(this, mNfcAdapter);
+        stopForegroundDispatch(this, nfcAdapter);
 
         super.onPause();
     }

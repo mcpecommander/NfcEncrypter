@@ -36,7 +36,7 @@ import java.util.Locale;
 
 public class CopyFragment extends Fragment {
 
-    public static AlertDialog erase_alert, copy_alert, remove_password_alert, paste_alert, erase_confirmation;
+    public static AlertDialog erase_alert, copy_alert, remove_password_alert, paste_alert, erase_confirmation, erase_success;
     private NdefMessage[] copiedData;
     private List<NdefRecord> decrypted_records;
 
@@ -58,6 +58,8 @@ public class CopyFragment extends Fragment {
         erase_confirmation = new AlertDialog.Builder(view.getContext()).setTitle("Are you sure?")
                 .setIcon(android.R.drawable.ic_dialog_alert).setMessage("This action cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> erase_alert.show()).setNegativeButton("Cancel", null).create();
+        erase_success = new AlertDialog.Builder(view.getContext()).setTitle("Erasure is done")
+                .setMessage("The tag was successfully deleted").setPositiveButton("Ok", null).create();
 
         Button erase = view.findViewById(R.id.erase_tag);
         Button copy = view.findViewById(R.id.copy_button);
@@ -79,12 +81,15 @@ public class CopyFragment extends Fragment {
             ndef.connect();
             if(ndef.isWritable()){
                 ndef.writeNdefMessage(msg);
+            }else{
+                new AlertDialog.Builder(getContext()).setTitle("Failed")
+                        .setMessage("Erasure failed. The tag is read only").setIcon(android.R.drawable.ic_dialog_alert).show();
             }
             ndef.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (FormatException e) {
-            e.printStackTrace();
+            erase_success.show();
+        } catch (IOException | FormatException e) {
+            new AlertDialog.Builder(getContext()).setTitle("Failed")
+                    .setMessage("Erasure failed. The tag was moved too quickly away from the device").setIcon(android.R.drawable.ic_dialog_alert).show();
         }
 
 
