@@ -2,7 +2,6 @@ package com.nfcencrypter.Fragments;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
@@ -17,7 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -49,14 +47,13 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class WriterFragment extends Fragment {
 
-    private AlertDialog readIndicator;
+    private AlertDialog readIndicator, recordAddAlert;
     private MainActivity activity;
     private TagRegistryAdapter adapter;
     private NdefRecord[] ndefRecords;
     static View.OnClickListener add_record_listener;
-    private AlertDialog recordAddAlert;
     private ActionMode.Callback actionModeCallback;
-    SelectionTracker<Long> selectionTracker;
+    private SelectionTracker<Long> selectionTracker;
     private ActionMode actionMode;
     private MenuItem selectAll, edit;
     public ViewPager.OnPageChangeListener pageChangeListener;
@@ -65,8 +62,7 @@ public class WriterFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        activity = (MainActivity) getActivity();
-
+        activity = (MainActivity) requireActivity();
         return inflater.inflate(
                 R.layout.writer_fragment, container, false);
     }
@@ -74,8 +70,9 @@ public class WriterFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        readIndicator = new AlertDialog.Builder(activity).setTitle("Writing...").setMessage("Place an Ndef-supporting tag near the device").create();
+        readIndicator = new AlertDialog.Builder(activity, R.style.CustomAlertDialog).setTitle("Writing...").setMessage("Place an Ndef-supporting tag near the device").create();
 
+        //Check if the tab is changed to another tab and cancel action mode.
         pageChangeListener = new ViewPager.OnPageChangeListener(){
 
             @Override
@@ -96,26 +93,32 @@ public class WriterFragment extends Fragment {
             }
         };
 
+        //Add the recycler view adapter and manager
         RecyclerView nfcInput = ((ConstraintLayout)view).findViewById(R.id.records_viewer);
         adapter = new TagRegistryAdapter(new ArrayList<>());
-
         LinearLayoutManager manager = new LinearLayoutManager(view.getContext());
-
         nfcInput.setAdapter(adapter);
         nfcInput.setLayoutManager(manager);
 
-
-
+        //Add a selection tracker to handle selections.
         selectionTracker = new SelectionTracker.Builder<>("record_selector", nfcInput,
-                new TagRegistryAdapter.CustomItemKeyProvider(), new TagRegistryAdapter.MyDetailsLookup(nfcInput),
-                StorageStrategy.createLongStorage()).withSelectionPredicate(new SelectionTracker.SelectionPredicate<Long>() {
+                //Custom stable id provider since google's is broken.
+                new TagRegistryAdapter.CustomItemKeyProvider(),
+                //Custom detail lookup.
+                new TagRegistryAdapter.MyDetailsLookup(nfcInput),
+                //Long storage since it is the easiest.
+                StorageStrategy.createLongStorage())
+                //Selection predicate to exclude the add button from the selection.
+                .withSelectionPredicate(new SelectionTracker.SelectionPredicate<Long>() {
             @Override
             public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
+                //Key == position so do not select the last item (the add button).
                 return key != adapter.records.size();
             }
 
             @Override
             public boolean canSetStateAtPosition(int position, boolean nextState) {
+                //The predicate should work well enough with just the first method but it seems to be broken so I check both the key and the position.
                 return position != adapter.records.size();
             }
 
@@ -125,15 +128,14 @@ public class WriterFragment extends Fragment {
             }
         }).build();
 
-
-
+        //A custom add record alert dialog that accepts text input.
         @SuppressLint("InflateParams")
+        //Inflate the edit text view wrapped inside a linear layout for ease of design.
         LinearLayout input = (LinearLayout) LayoutInflater.from(view.getContext()).inflate(R.layout.input_record, null);
         EditText record = input.findViewById(R.id.input_record);
-
-
-        recordAddAlert = new AlertDialog.Builder(view.getContext()).setView(input)
+        recordAddAlert = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setView(input)
                 .setPositiveButton("Ok", (dialog, button) -> {
+            //Check if add record or editing record.
             if (!record.getText().toString().isEmpty() && !selectionTracker.hasSelection()) {
                 adapter.records.add(record.getText().toString());
                 adapter.notifyDataSetChanged();
@@ -145,8 +147,10 @@ public class WriterFragment extends Fragment {
                 selectionTracker.clearSelection();
             }
         }).setNegativeButton("Cancel", null)
+                //When adding or canceling or dismissing the alert dialog, the edit text view will be emptied.
                 .setOnDismissListener(dialog -> record.getText().clear()).create();
 
+        //Add record button should only be pressable when nothing is selected.
         add_record_listener = v -> {
             if(!selectionTracker.hasSelection()) {
                 recordAddAlert.show();
@@ -155,52 +159,52 @@ public class WriterFragment extends Fragment {
             }
         };
 
+        //Check for selection saved in after pausing.
         if (savedInstanceState != null) {
             selectionTracker.onRestoreInstanceState(savedInstanceState);
         }
 
+        //Selection listener for each selection or deselection.
         selectionTracker.addObserver(new SelectionTracker.SelectionObserver<Long>() {
             @Override
             public void onItemStateChanged(@NonNull Long key, boolean selected) {
-            if(selected){
-                if(selectionTracker.getSelection().size() == 1){
-                    if (actionMode != null ) {
-                        return;
-                    }
-
-                    // Start the CAB using the ActionMode.Callback defined below
-                    if (activity != null) {
+            if(selected) {
+                //if first selection and action mode has been started yet so start action mode.
+                if (selectionTracker.getSelection().size() == 1) {
+                    if (actionMode != null) {
+                        //if action mode has already been started, then make sure that edit item is visible since only one record is selected.
+                        edit.setVisible(true);
+                    } else {
+                        // Start the CAB using the ActionMode.Callback defined below
                         actionMode = activity.startSupportActionMode(actionModeCallback);
-
                     }
-                }
-                if (selectionTracker.getSelection().size() != 1){
+                } else {
+                    //Set edit item to invisible when more than one records are selected.
                     edit.setVisible(false);
-                }else{
-                    edit.setVisible(true);
                 }
-                if(selectionTracker.getSelection().size() == adapter.records.size()){
-                    if(actionMode != null && selectAll != null){
+
+                if (actionMode != null && selectAll != null) {
+                    //if every record are selected then change select all icon to deselect all instead.
+                    if (selectionTracker.getSelection().size() == adapter.records.size()) {
                         selectAll.setChecked(true);
                         selectAll.setIcon(R.drawable.deselect_all);
-                    }
-                }else{
-                    if(actionMode != null && selectAll != null){
-                        if(selectAll.isChecked()){
-                            selectAll.setChecked(false);
-                            selectAll.setIcon(R.drawable.select_all);
-                        }
+                    } else {
+                        selectAll.setChecked(false);
+                        selectAll.setIcon(R.drawable.select_all);
                     }
                 }
             }else{
                 if(actionMode != null){
+                    //if deselect the last record then finish action mode
                     if(selectionTracker.getSelection().isEmpty()){
                         actionMode.finish();
                     }else{
-                        if(selectionTracker.getSelection().size() != adapter.records.size() && selectAll.isChecked()){
+                        //Set select all back to select all when deselecting a record.
+                        if(selectionTracker.getSelection().size() != adapter.records.size()){
                             selectAll.setChecked(false);
                             selectAll.setIcon(R.drawable.select_all);
                         }
+                        //Set edit menu item visibility depending on the number of records selected.
                         if (selectionTracker.getSelection().size() != 1){
                             edit.setVisible(false);
                         }else{
@@ -209,6 +213,7 @@ public class WriterFragment extends Fragment {
                     }
                 }
             }
+            //Add selection tint.
             ConstraintLayout recordView = (ConstraintLayout) manager.findViewByPosition(Math.toIntExact(key));
             if(recordView != null) {
                 if (selected) {
@@ -220,11 +225,11 @@ public class WriterFragment extends Fragment {
             }
         });
 
+        //Action mode callback.
         actionModeCallback = new ActionMode.Callback() {
-
-
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                //Create action mode menu and set some fields.
                 MenuInflater inflater = mode.getMenuInflater();
                 inflater.inflate(R.menu.action_menu, menu);
                 selectAll = menu.findItem(R.id.select_all);

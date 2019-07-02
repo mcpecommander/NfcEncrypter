@@ -4,13 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimary"
     tools:context=".HelpActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/help_toolbar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="#E8EEED"
+        android:background="@color/colorPrimaryDark"
         android:elevation="4dp"
         android:minHeight="?attr/actionBarSize"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"

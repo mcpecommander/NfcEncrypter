@@ -51,14 +51,14 @@ public class CopyFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        erase_alert = new AlertDialog.Builder(view.getContext()).setTitle("Erasing...").setMessage("Place an Ndef-supporting tag to erase").create();
-        copy_alert = new AlertDialog.Builder(view.getContext()).setTitle("Copying...").setMessage("Place an encrypted tag to copy its content.").create();
-        remove_password_alert = new AlertDialog.Builder(view.getContext()).setTitle("Removing...").setMessage("Place an encrypted tag to remove its password.").create();
-        paste_alert = new AlertDialog.Builder(view.getContext()).setTitle("Pasting").setMessage("Place a tag to paste the data to").create();
-        erase_confirmation = new AlertDialog.Builder(view.getContext()).setTitle("Are you sure?")
+        erase_alert = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setTitle("Erasing...").setMessage("Place an Ndef-supporting tag to erase").create();
+        copy_alert = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setTitle("Copying...").setMessage("Place an encrypted tag to copy its content.").create();
+        remove_password_alert = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setTitle("Removing...").setMessage("Place an encrypted tag to remove its password.").create();
+        paste_alert = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setTitle("Pasting").setMessage("Place a tag to paste the data to").create();
+        erase_confirmation = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setTitle("Are you sure?")
                 .setIcon(android.R.drawable.ic_dialog_alert).setMessage("This action cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> erase_alert.show()).setNegativeButton("Cancel", null).create();
-        erase_success = new AlertDialog.Builder(view.getContext()).setTitle("Erasure is done")
+        erase_success = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setTitle("Erasure is done")
                 .setMessage("The tag was successfully deleted").setPositiveButton("Ok", null).create();
 
         Button erase = view.findViewById(R.id.erase_tag);

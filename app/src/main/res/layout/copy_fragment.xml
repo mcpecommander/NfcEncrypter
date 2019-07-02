@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="4dp"
+    android:background="@color/colorPrimary"
+    android:elevation="2dp"
     android:orientation="vertical"
     tools:context=".Fragments.CopyFragment">
 
@@ -12,6 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:backgroundTint="@color/colorPrimaryDark"
         android:contentDescription="Copy Tag"
         android:drawableTop="@drawable/copy_icon"
         android:elevation="2dp"
@@ -25,6 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:backgroundTint="@color/colorPrimaryDark"
         android:contentDescription="Remove Password"
         android:drawableTop="@drawable/unlock_icon"
         android:elevation="2dp"
@@ -38,6 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:backgroundTint="@color/colorPrimaryDark"
         android:contentDescription="Erase Tag"
         android:drawableTop="@drawable/delete_icon"
         android:elevation="2dp"

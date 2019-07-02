@@ -6,8 +6,4 @@
     android:useLevel="false"
     android:tint="@android:color/primary_text_light"
     >
-
-
-
-
 </shape>

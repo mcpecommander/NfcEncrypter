@@ -108,7 +108,7 @@ public class ReaderFragment extends Fragment {
                 @SuppressLint("InflateParams")
                 LinearLayout rootPrompt = (LinearLayout) getLayoutInflater().inflate(R.layout.password_prompt, null);
                 EditText password = rootPrompt.findViewById(R.id.password_prompt);
-                new AlertDialog.Builder(activity).setView(rootPrompt).setPositiveButton("Decrypt", (dialog, button) ->{
+                new AlertDialog.Builder(activity, R.style.CustomAlertDialog).setView(rootPrompt).setPositiveButton("Decrypt", (dialog, button) ->{
                     if(!password.getText().toString().isEmpty()){
                         for(NdefRecord encrypted : encryptedRecords){
                             byte[] iv = new byte[16];
