@@ -12,4 +12,10 @@
         android:icon="@drawable/delete"
         android:title="delete"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/edit"
+        android:icon="@drawable/edit_icon"
+        android:title="Edit"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
 </menu>

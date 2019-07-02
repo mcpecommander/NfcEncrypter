@@ -2,6 +2,7 @@ package com.nfcencrypter.Fragments;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
@@ -16,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -56,9 +58,8 @@ public class WriterFragment extends Fragment {
     private ActionMode.Callback actionModeCallback;
     SelectionTracker<Long> selectionTracker;
     private ActionMode actionMode;
-    private MenuItem selectAll;
+    private MenuItem selectAll, edit;
     public ViewPager.OnPageChangeListener pageChangeListener;
-
 
 
     @Override
@@ -130,13 +131,22 @@ public class WriterFragment extends Fragment {
         LinearLayout input = (LinearLayout) LayoutInflater.from(view.getContext()).inflate(R.layout.input_record, null);
         EditText record = input.findViewById(R.id.input_record);
 
-        recordAddAlert = new AlertDialog.Builder(view.getContext()).setView(input).setPositiveButton("Add Record", (dialog, button) -> {
+
+        recordAddAlert = new AlertDialog.Builder(view.getContext()).setView(input)
+                .setPositiveButton("Ok", (dialog, button) -> {
             if (!record.getText().toString().isEmpty() && !selectionTracker.hasSelection()) {
                 adapter.records.add(record.getText().toString());
                 adapter.notifyDataSetChanged();
+            } else if(!record.getText().toString().isEmpty() && selectionTracker.getSelection().size() == 1){
+                for(Long key : selectionTracker.getSelection()){
+                    adapter.records.set(Math.toIntExact(key), record.getText().toString());
+                    adapter.notifyItemChanged(Math.toIntExact(key));
+                }
+                selectionTracker.clearSelection();
             }
         }).setNegativeButton("Cancel", null)
                 .setOnDismissListener(dialog -> record.getText().clear()).create();
+
         add_record_listener = v -> {
             if(!selectionTracker.hasSelection()) {
                 recordAddAlert.show();
@@ -164,6 +174,11 @@ public class WriterFragment extends Fragment {
 
                     }
                 }
+                if (selectionTracker.getSelection().size() != 1){
+                    edit.setVisible(false);
+                }else{
+                    edit.setVisible(true);
+                }
                 if(selectionTracker.getSelection().size() == adapter.records.size()){
                     if(actionMode != null && selectAll != null){
                         selectAll.setChecked(true);
@@ -178,14 +193,20 @@ public class WriterFragment extends Fragment {
                     }
                 }
             }else{
-                if(selectionTracker.getSelection().isEmpty() && actionMode != null){
-                    actionMode.finish();
-                }
-                if(!selectionTracker.getSelection().isEmpty() && actionMode != null &&
-                        selectionTracker.getSelection().size() != adapter.records.size() && selectAll.isChecked()){
-                    selectAll.setChecked(false);
-                    selectAll.setIcon(R.drawable.select_all);
-
+                if(actionMode != null){
+                    if(selectionTracker.getSelection().isEmpty()){
+                        actionMode.finish();
+                    }else{
+                        if(selectionTracker.getSelection().size() != adapter.records.size() && selectAll.isChecked()){
+                            selectAll.setChecked(false);
+                            selectAll.setIcon(R.drawable.select_all);
+                        }
+                        if (selectionTracker.getSelection().size() != 1){
+                            edit.setVisible(false);
+                        }else{
+                            edit.setVisible(true);
+                        }
+                    }
                 }
             }
             ConstraintLayout recordView = (ConstraintLayout) manager.findViewByPosition(Math.toIntExact(key));
@@ -207,6 +228,7 @@ public class WriterFragment extends Fragment {
                 MenuInflater inflater = mode.getMenuInflater();
                 inflater.inflate(R.menu.action_menu, menu);
                 selectAll = menu.findItem(R.id.select_all);
+                edit = menu.findItem(R.id.edit);
                 return true;
             }
 
@@ -241,6 +263,17 @@ public class WriterFragment extends Fragment {
                             item.setChecked(false);
                         }
                         return true;
+                    case R.id.edit:
+                        if(selectionTracker.getSelection().size() == 1){
+                            EditText record = recordAddAlert.findViewById(R.id.input_record);
+                            for(Long key : selectionTracker.getSelection()){
+                                record.setText(adapter.records.get(Math.toIntExact(key)));
+                                record.setSelection(record.getText().length());
+                                record.requestFocus();
+                                recordAddAlert.show();
+                            }
+
+                        }
                     default:
                         return false;
                 }
