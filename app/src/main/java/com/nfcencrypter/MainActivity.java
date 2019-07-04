@@ -15,12 +15,16 @@ import android.nfc.tech.NfcBarcode;
 import android.nfc.tech.NfcF;
 import android.nfc.tech.NfcV;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.text.InputType;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -44,6 +48,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import javax.crypto.spec.SecretKeySpec;
+
+import static androidx.viewpager.widget.ViewPager.SCROLL_STATE_DRAGGING;
 
 public class MainActivity extends AppCompatActivity implements ReaderFragment.OnFragmentFinishLoad{
 
@@ -107,8 +113,8 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
 
         eye = getResources().getDrawable(R.drawable.show_icon, null);
         eyeChecked = getResources().getDrawable(R.drawable.hide_icon, null);
-        writing_successful = new AlertDialog.Builder(this).setTitle("Writing successful.").setPositiveButton("Ok", null).create();
-        writing_failed = new AlertDialog.Builder(this).setTitle("Writing failed.").setPositiveButton("Ok", null).create();
+        writing_successful = new AlertDialog.Builder(this, R.style.CustomAlertDialog).setTitle("Writing successful.").setPositiveButton("Ok", null).create();
+        writing_failed = new AlertDialog.Builder(this, R.style.CustomAlertDialog).setTitle("Writing failed.").setPositiveButton("Ok", null).create();
 
         mainPage = findViewById(R.id.mainPager);
         adapter = new MainPageFragmentAdapter(getSupportFragmentManager());
@@ -155,7 +161,34 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
             }
             hasData = false;
         }
-        mainPage.addOnPageChangeListener(((WriterFragment) adapter.getRegisteredFragment(1)).pageChangeListener);
+        WriterFragment writerFragment = (WriterFragment) adapter.getRegisteredFragment(1);
+        mainPage.addOnPageChangeListener(new ViewPager.OnPageChangeListener(){
+
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+
+            @Override
+            public void onPageSelected(int position) {
+                if(position != 1){
+                    if(writerFragment.action_mode != null){
+                        writerFragment.action_mode.finish();
+                    }
+                }else{
+                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if(state == SCROLL_STATE_DRAGGING && mainPage.getCurrentItem() == 1){
+
+                    hideKeyboard();
+                    new Handler().postDelayed(() ->{
+                        if(mainPage.getCurrentItem() != 1) getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+                    }, 300);
+                }
+            }
+        });
     }
 
     @Override
@@ -223,6 +256,8 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
                         CopyFragment.paste_alert.dismiss();
                     }else if(CopyFragment.remove_password_alert != null && CopyFragment.remove_password_alert.isShowing()){
                         copy.removePassword(intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES));
+                    }else if(CopyFragment.read_encrypted != null && CopyFragment.read_encrypted.isShowing()){
+                        copy.readEncrypted(intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES));
                     }
 
             }
@@ -232,15 +267,21 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
     public void showPassword(View view){
         EditText password = findViewById(R.id.password);
         EditText confirmation = findViewById(R.id.password_confirmation);
+        int pass_sele = password.getSelectionStart();
+        int conf_sele = confirmation.getSelectionStart();
         ImageButton imageButton = (ImageButton) view;
         if(imageButton.getTag() == null){
-            password.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-            confirmation.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+            password.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            password.setSelection(pass_sele);
+            confirmation.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            confirmation.setSelection(conf_sele);
             imageButton.setTag(" ");
             imageButton.setImageDrawable(eyeChecked);
         }else{
-            password.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            confirmation.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            password.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            password.setSelection(pass_sele);
+            confirmation.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            confirmation.setSelection(conf_sele);
             imageButton.setTag(null);
             imageButton.setImageDrawable(eye);
         }

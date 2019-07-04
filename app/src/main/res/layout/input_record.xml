@@ -13,5 +13,6 @@
         android:ems="10"
         android:hint="Record"
         android:inputType="text"
-        android:textColor="@color/colorText" />
+        android:textColor="@color/colorText"
+        android:textCursorDrawable="@drawable/text_cursor" />
 </LinearLayout>

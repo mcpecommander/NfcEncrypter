@@ -7,7 +7,7 @@
     android:backgroundTint="@color/colorPrimary"
     android:backgroundTintMode="multiply"
     android:padding="16dp"
-    android:textColor="@color/colorText"
+    android:textColor="@color/colorTextLight"
     android:textSize="20sp">
 
 </TextView>

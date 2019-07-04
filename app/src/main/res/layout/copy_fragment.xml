@@ -25,6 +25,20 @@
         android:translationZ="2dp" />
 
     <Button
+        android:id="@+id/change_password"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:backgroundTint="@color/colorPrimaryDark"
+        android:contentDescription="Change Password"
+        android:drawableTop="@drawable/change_password"
+        android:elevation="2dp"
+        android:paddingTop="48dp"
+        android:text="Change password"
+        android:textSize="20sp"
+        android:translationZ="2dp" />
+
+    <Button
         android:id="@+id/remove_password"
         android:layout_width="match_parent"
         android:layout_height="0dp"

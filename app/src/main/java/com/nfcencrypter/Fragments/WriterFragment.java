@@ -30,7 +30,6 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
 
 import com.nfcencrypter.MainActivity;
 import com.nfcencrypter.R;
@@ -54,9 +53,8 @@ public class WriterFragment extends Fragment {
     static View.OnClickListener add_record_listener;
     private ActionMode.Callback actionModeCallback;
     private SelectionTracker<Long> selectionTracker;
-    private ActionMode actionMode;
+    public ActionMode action_mode;
     private MenuItem selectAll, edit;
-    public ViewPager.OnPageChangeListener pageChangeListener;
 
 
     @Override
@@ -73,25 +71,7 @@ public class WriterFragment extends Fragment {
         readIndicator = new AlertDialog.Builder(activity, R.style.CustomAlertDialog).setTitle("Writing...").setMessage("Place an Ndef-supporting tag near the device").create();
 
         //Check if the tab is changed to another tab and cancel action mode.
-        pageChangeListener = new ViewPager.OnPageChangeListener(){
 
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                if(position != 1 && actionMode != null){
-                    actionMode.finish();
-                }
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        };
 
         //Add the recycler view adapter and manager
         RecyclerView nfcInput = ((ConstraintLayout)view).findViewById(R.id.records_viewer);
@@ -171,19 +151,19 @@ public class WriterFragment extends Fragment {
             if(selected) {
                 //if first selection and action mode has been started yet so start action mode.
                 if (selectionTracker.getSelection().size() == 1) {
-                    if (actionMode != null) {
+                    if (action_mode != null) {
                         //if action mode has already been started, then make sure that edit item is visible since only one record is selected.
                         edit.setVisible(true);
                     } else {
                         // Start the CAB using the ActionMode.Callback defined below
-                        actionMode = activity.startSupportActionMode(actionModeCallback);
+                        action_mode = activity.startSupportActionMode(actionModeCallback);
                     }
                 } else {
                     //Set edit item to invisible when more than one records are selected.
                     edit.setVisible(false);
                 }
 
-                if (actionMode != null && selectAll != null) {
+                if (action_mode != null && selectAll != null) {
                     //if every record are selected then change select all icon to deselect all instead.
                     if (selectionTracker.getSelection().size() == adapter.records.size()) {
                         selectAll.setChecked(true);
@@ -194,10 +174,10 @@ public class WriterFragment extends Fragment {
                     }
                 }
             }else{
-                if(actionMode != null){
+                if(action_mode != null){
                     //if deselect the last record then finish action mode
                     if(selectionTracker.getSelection().isEmpty()){
-                        actionMode.finish();
+                        action_mode.finish();
                     }else{
                         //Set select all back to select all when deselecting a record.
                         if(selectionTracker.getSelection().size() != adapter.records.size()){
@@ -287,7 +267,7 @@ public class WriterFragment extends Fragment {
             @Override
             public void onDestroyActionMode(ActionMode mode) {
                 selectionTracker.clearSelection();
-                actionMode = null;
+                action_mode = null;
             }
         };
 
@@ -377,7 +357,7 @@ public class WriterFragment extends Fragment {
     }
 
     @NonNull
-    private byte[] encrypt(String password, String text) throws NoSuchAlgorithmException {
+    static byte[] encrypt(String password, String text) throws NoSuchAlgorithmException {
         SecretKeySpec spec = MainActivity.generateKey(password);
         byte[] iv = generateIV();
         byte[] payLoad = new byte[0];
@@ -393,14 +373,14 @@ public class WriterFragment extends Fragment {
 
     }
 
-    private byte[] generateIV() {
+    private static byte[] generateIV() {
         SecureRandom rand = new SecureRandom();
         byte[] iv = new byte[16];
         rand.nextBytes(iv);
         return iv;
     }
 
-    private static NdefRecord createExternal(byte[] text){
+    static NdefRecord createExternal(byte[] text){
 
         byte[] byteDomain = "application://com.nfcencrypter".getBytes(StandardCharsets.UTF_8);
         byte[] byteType = "record".getBytes(StandardCharsets.UTF_8);

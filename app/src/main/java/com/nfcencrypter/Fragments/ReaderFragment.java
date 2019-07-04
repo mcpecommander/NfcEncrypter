@@ -124,6 +124,8 @@ public class ReaderFragment extends Fragment {
                         updateDataset(activity);
                     }
                 }).setNegativeButton("Cancel", null).show();
+
+
             }else{
                 if(records.isEmpty()){
                     records.add("Couldn't read Tag");

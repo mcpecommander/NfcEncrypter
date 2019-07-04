@@ -36,7 +36,8 @@ import java.util.Locale;
 
 public class CopyFragment extends Fragment {
 
-    public static AlertDialog erase_alert, copy_alert, remove_password_alert, paste_alert, erase_confirmation, erase_success;
+    public static AlertDialog erase_alert, copy_alert, remove_password_alert,
+            paste_alert, erase_confirmation, erase_success, read_encrypted;
     private NdefMessage[] copiedData;
     private List<NdefRecord> decrypted_records;
 
@@ -60,14 +61,19 @@ public class CopyFragment extends Fragment {
                 .setPositiveButton("Delete", (dialog, which) -> erase_alert.show()).setNegativeButton("Cancel", null).create();
         erase_success = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setTitle("Erasure is done")
                 .setMessage("The tag was successfully deleted").setPositiveButton("Ok", null).create();
+        read_encrypted = new AlertDialog.Builder(view.getContext(), R.style.CustomAlertDialog).setTitle("Reading...")
+                .setMessage("Place an encrypted tag to change its password").create();
+
 
         Button erase = view.findViewById(R.id.erase_tag);
         Button copy = view.findViewById(R.id.copy_button);
         Button removePassword = view.findViewById(R.id.remove_password);
+        Button changePassword = view.findViewById(R.id.change_password);
 
         copy.setOnClickListener(v -> copy_alert.show());
         erase.setOnClickListener(v -> erase_confirmation.show());
         removePassword.setOnClickListener(v -> remove_password_alert.show());
+        changePassword.setOnClickListener(v -> read_encrypted.show());
 
     }
 
@@ -82,13 +88,13 @@ public class CopyFragment extends Fragment {
             if(ndef.isWritable()){
                 ndef.writeNdefMessage(msg);
             }else{
-                new AlertDialog.Builder(getContext()).setTitle("Failed")
+                new AlertDialog.Builder(getContext(), R.style.CustomAlertDialog).setTitle("Failed")
                         .setMessage("Erasure failed. The tag is read only").setIcon(android.R.drawable.ic_dialog_alert).show();
             }
             ndef.close();
             erase_success.show();
         } catch (IOException | FormatException e) {
-            new AlertDialog.Builder(getContext()).setTitle("Failed")
+            new AlertDialog.Builder(getContext(), R.style.CustomAlertDialog).setTitle("Failed")
                     .setMessage("Erasure failed. The tag was moved too quickly away from the device").setIcon(android.R.drawable.ic_dialog_alert).show();
         }
 
@@ -136,32 +142,76 @@ public class CopyFragment extends Fragment {
         }
     }
 
+    public void readEncrypted(Parcelable[] rawMessages){
+        MainActivity activity = (MainActivity) requireActivity();
+        read_encrypted.dismiss();
+        NdefMessage[] messages = new NdefMessage[rawMessages.length];
+        for(int i = 0; i < rawMessages.length; i++){
+            messages[i] = (NdefMessage) rawMessages[i];
+        }
+        if(requiresPassword(messages)) {
+            @SuppressLint("InflateParams")
+            LinearLayout rootChange = (LinearLayout) getLayoutInflater().inflate(R.layout.change_password, null);
+            EditText oldPassword = rootChange.findViewById(R.id.old_password);
+            EditText newPassword = rootChange.findViewById(R.id.new_password);
+            EditText confirmPassword = rootChange.findViewById(R.id.new_password_confirmation);
+            new AlertDialog.Builder(activity, R.style.CustomAlertDialog).setView(rootChange).setTitle("Change Password")
+                    .setPositiveButton("Change Password", (dialog, which) -> {
+                if(!oldPassword.getText().toString().isEmpty() && !newPassword.getText().toString().isEmpty()
+                && newPassword.getText().toString().equals(confirmPassword.getText().toString())){
+                    copiedData = new NdefMessage[messages.length];
+                    for (int i = 0; i < messages.length; i++ ) {
+                        NdefMessage message = messages[i];
+                        NdefRecord[] temp = new NdefRecord[message.getRecords().length];
+                        for (int j = 0; j < message.getRecords().length; j++) {
+                            NdefRecord encrypted = message.getRecords()[j];
+                            if (!(Arrays.equals(encrypted.getId(), MainActivity.TAG_UID) || Arrays.equals(encrypted.getId(), MainActivity.OLD_TAG_UID)) || encrypted.getTnf() != NdefRecord.TNF_EXTERNAL_TYPE)
+                                continue;
+                            byte[] iv = new byte[16];
+                            System.arraycopy(encrypted.getPayload(), 0, iv, 0, 16);
+                            byte[] payLoad = new byte[encrypted.getPayload().length - 16];
+                            System.arraycopy(encrypted.getPayload(), 16, payLoad, 0, payLoad.length);
+                            try {
+                                String decryptedText = ReaderFragment.decrypt(oldPassword.getText().toString(), iv, payLoad);
+                                if(decryptedText.equals("Wrong password")){
+                                    Toast.makeText(activity, "Wrong password", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                                temp[j] = WriterFragment.createExternal(WriterFragment.encrypt(newPassword.getText().toString(), decryptedText));
+
+                            } catch (NoSuchAlgorithmException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        copiedData[i] = new NdefMessage(temp);
+                    }
+                    paste_alert.show();
+                }
+            }).setNegativeButton("Cancel", (dialog, which) -> copiedData = null).show();
+
+        }else{
+            Toast.makeText(activity, "This tag doesn't have any password-encrypted data", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
     public void removePassword(Parcelable[] rawMessages){
         remove_password_alert.dismiss();
         NdefMessage[] messages = new NdefMessage[rawMessages.length];
         for(int i = 0; i < rawMessages.length; i++){
             messages[i] = (NdefMessage) rawMessages[i];
         }
-        MainActivity activity = (MainActivity) getActivity();
+        MainActivity activity = (MainActivity) requireActivity();
         @SuppressLint("InflateParams")
         LinearLayout rootPrompt = (LinearLayout) getLayoutInflater().inflate(R.layout.password_prompt, null);
         EditText password = rootPrompt.findViewById(R.id.password_prompt);
         decrypted_records = new ArrayList<>();
-        boolean requirePassword = false;
-        for(NdefMessage message: messages) {
-            for (NdefRecord encrypted : message.getRecords()) {
-                if(Arrays.equals(encrypted.getId(), MainActivity.TAG_UID) && encrypted.getTnf() == NdefRecord.TNF_EXTERNAL_TYPE){
-                    requirePassword = true;
-                }
-
-            }
-        }
-        if(requirePassword) {
-            new AlertDialog.Builder(activity).setView(rootPrompt).setPositiveButton("Decrypt", (dialog, button) -> {
+        if(requiresPassword(messages)) {
+            new AlertDialog.Builder(activity, R.style.CustomAlertDialog).setView(rootPrompt).setPositiveButton("Decrypt", (dialog, button) -> {
                 if (!password.getText().toString().isEmpty()) {
                     for (NdefMessage message : messages) {
                         for (NdefRecord encrypted : message.getRecords()) {
-                            if (!Arrays.equals(encrypted.getId(), MainActivity.TAG_UID) || encrypted.getTnf() != NdefRecord.TNF_EXTERNAL_TYPE)
+                            if (!(Arrays.equals(encrypted.getId(), MainActivity.TAG_UID) || Arrays.equals(encrypted.getId(), MainActivity.OLD_TAG_UID)) || encrypted.getTnf() != NdefRecord.TNF_EXTERNAL_TYPE)
                                 continue;
                             byte[] iv = new byte[16];
                             System.arraycopy(encrypted.getPayload(), 0, iv, 0, 16);
@@ -184,10 +234,23 @@ public class CopyFragment extends Fragment {
                     //Need the delay for the password view to lose focus.
                     new Handler().postDelayed(() -> paste_alert.show(), 1);
                 }
-            }).setNegativeButton("Cancel", null).show();
+            }).setNegativeButton("Cancel", (dialog, which) -> decrypted_records = null).show();
         }else{
             Toast.makeText(activity, "Tag does not contain any password protected content.", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    private static boolean requiresPassword(NdefMessage... messages){
+        for(NdefMessage message: messages) {
+            for (NdefRecord encrypted : message.getRecords()) {
+                if((Arrays.equals(encrypted.getId(), MainActivity.TAG_UID) || Arrays.equals(encrypted.getId(), MainActivity.OLD_TAG_UID))
+                        && encrypted.getTnf() == NdefRecord.TNF_EXTERNAL_TYPE){
+                    return true;
+                }
+
+            }
+        }
+        return false;
     }
 }
