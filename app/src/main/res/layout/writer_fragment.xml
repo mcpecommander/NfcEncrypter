@@ -6,8 +6,7 @@
     android:layout_height="match_parent"
     android:layout_margin="4dp"
     android:background="@color/colorPrimary"
-    android:backgroundTintMode="multiply"
-    android:elevation="2dp">
+    android:backgroundTintMode="multiply">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/records_viewer"

@@ -4,11 +4,11 @@
     <color name="colorPrimaryDark">#c7c7c7</color>
     <color name="colorPrimaryLight">#ffffff</color>
 
-    <color name="colorSecondary">#90caf9</color>
-    <color name="colorSecondaryDark">#5d99c6</color>
-    <color name="colorSecondaryLight">#c3fdff</color>
+    <color name="colorSecondary">#eceff1</color>
+    <color name="colorSecondaryDark">#babdbe</color>
+    <color name="colorSecondaryLight">#ffffff</color>
 
-    <color name="colorAccent">#5d99c6</color>
+    <color name="colorAccent">#babdbe</color>
 
     <color name="colorDarkGray">#808080</color>
 
