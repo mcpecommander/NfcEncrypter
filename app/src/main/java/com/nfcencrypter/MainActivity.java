@@ -111,14 +111,15 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
         Toolbar myToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
 
-        eye = getResources().getDrawable(R.drawable.show_icon, null);
-        eyeChecked = getResources().getDrawable(R.drawable.hide_icon, null);
+        eye = getResources().getDrawable(R.drawable.hide_icon, null);
+        eyeChecked = getResources().getDrawable(R.drawable.show_icon, null);
         writing_successful = new AlertDialog.Builder(this, R.style.CustomAlertDialog).setTitle("Writing successful.").setPositiveButton("Ok", null).create();
         writing_failed = new AlertDialog.Builder(this, R.style.CustomAlertDialog).setTitle("Writing failed.").setPositiveButton("Ok", null).create();
 
         mainPage = findViewById(R.id.mainPager);
         adapter = new MainPageFragmentAdapter(getSupportFragmentManager());
         mainPage.setAdapter(adapter);
+        mainPage.setOffscreenPageLimit(2);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(mainPage);
 
@@ -173,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements ReaderFragment.On
                     if(writerFragment.action_mode != null){
                         writerFragment.action_mode.finish();
                     }
+                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
                 }else{
                     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 }

@@ -34,5 +34,12 @@
     <string name="erase_help_desc">To erase the contents of a tag simply press the erase button and wait for the prompt.\n
         Then place the tag near the device and the contents will be deleted.\n
         Notice that this action cannot be undone and the records on the tag are permanently deleted.</string>
+    <string name="change_help_title">How to change a tag\'s password</string>
+    <string name="change_help_desc">To change a tag\'s password, press the change password button and place the tag
+        near the device and if the tag has encrypted data on it, a password change prompt will show up.\n
+        Enter the old password followed by the new password and reenter the new password to confirm and press change.\n
+        A new prompt will show up if the old password is correct and a either new tag or an old tag can be placed nearby the device
+        to copy the new data into it.\n
+        This mode can also be used to copy data into other tags with another password or to the same tag to change the initiation vector.</string>
 
 </resources>

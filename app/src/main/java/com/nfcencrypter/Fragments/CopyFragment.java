@@ -185,7 +185,7 @@ public class CopyFragment extends Fragment {
                         }
                         copiedData[i] = new NdefMessage(temp);
                     }
-                    paste_alert.show();
+                    new Handler().postDelayed(() -> paste_alert.show(), 1);
                 }
             }).setNegativeButton("Cancel", (dialog, which) -> copiedData = null).show();
 
